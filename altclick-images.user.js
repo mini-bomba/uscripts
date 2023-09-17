@@ -31,3 +31,4 @@
     // Open all images
     for (const u of urls) if (u != null) GM_openInTab(u);
   });
+})();
