@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.3.0
+// @version     1.3.1
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -39,7 +39,7 @@
     const urls = new Set();
     // Check if target is an image
     if (isTag(target, "img")) urls.add(target.src);
-    if (isTag(target, "imgage")) {
+    if (isTag(target, "image")) {
       urls.add(target.href.baseVal);
       urls.add(target.href.animVal);
     }
