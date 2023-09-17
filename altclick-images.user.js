@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.2.2
+// @version     1.3.0
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -28,17 +28,27 @@
     while (target.parentElement != null && target.clientWidth === target.parentElement.clientWidth && target.clientHeight == target.parentElement.clientHeight) {
       target = target.parentElement;
     }
-    // Find all img elements under the element
-    let imgs = target.querySelectorAll("img");
     // If no images found - go up one more time
-    if (!isTag(target, "img") && target.parentElement != null && imgs.length === 0) {
+    if (!isTag(target, "img") && !isTag(target, "image") && target.parentElement != null && target.querySelector("img, image") == null) {
       target = target.parentElement;
-      imgs = target.querySelectorAll("img");
     }
-    // Deduplicate urls
+    // Find all img elements under the element
+    const imgs = target.querySelectorAll("img");
+    const images = target.querySelectorAll("image");
+    // Collect URLs
     const urls = new Set();
-    if (isTag(target, "img")) urls.add(target.src); // include target if it's an img element
+    // Check if target is an image
+    if (isTag(target, "img")) urls.add(target.src);
+    if (isTag(target, "imgage")) {
+      urls.add(target.href.baseVal);
+      urls.add(target.href.animVal);
+    }
+    // Add any images found
     for (const i of imgs) urls.add(i.src);
+    for (const i of images) {
+      urls.add(i.href.baseVal);
+      urls.add(i.href.animVal);
+    }
     // Ask for confirmation when opening > 5 tabs
     if (urls.size > 5 && last_size !== urls.size) {
       last_size = urls.size;
