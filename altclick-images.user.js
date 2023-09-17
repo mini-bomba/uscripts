@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.2.0
+// @version     1.2.1
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -14,22 +14,28 @@
 // ==/UserScript==
 (function (){
   let last_size = null;
+  function isTag(element, tag) {
+    return element.tagName.toLowerCase() === tag.toLowerCase();
+  }
   document.addEventListener("click", ev => {
     if (!ev.altKey) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
     let target = ev.target;
-    // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
-    if (target.classList.contains("photo-notes-scrappy-view")) target = target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? target;
     // If parent element has the same size as current element, go up
     while (target.parentElement != null && target.clientWidth === target.parentElement.clientWidth && target.clientHeight == target.parentElement.clientHeight) {
       target = target.parentElement;
     }
     // Find all img elements under the element
-    const imgs = target.querySelectorAll("img");
+    let imgs = target.querySelectorAll("img");
+    // If no images found - go up one more time
+    if (!isTag(target, "img") && target.parentElement != null && imgs.length === 0) {
+      target = target.parentElement;
+      imgs = target.querySelectorAll("img");
+    }
     // Deduplicate urls
     const urls = new Set();
-    if (target.tagName.toLowerCase() === "img") urls.add(target.src); // include target if it's an img element
+    if (isTag(target, "img")) urls.add(target.src); // include target if it's an img element
     for (const i of imgs) urls.add(i.src);
     // Ask for confirmation when opening > 5 tabs
     if (urls.size > 5 && last_size !== urls.size) {
