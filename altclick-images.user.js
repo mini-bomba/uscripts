@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.0.1
+// @version     1.1.0
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -15,11 +15,17 @@
   document.body.addEventListener("click", ev => {
     if (!ev.altKey) return;
     ev.preventDefault();
+    ev.stopImmediatePropagation();
+    // If parent element has the same size as current element, go up
+    let target = ev.target;
+    while (target.parentElement != null && target.clientWidth === target.parentElement.clientWidth && target.clientHeight == target.parentElement.clientHeight) {
+      target = target.parentElement;
+    }
     // Find all img elements under the element
-    const imgs = ev.target.querySelectorAll("img");
+    const imgs = target.querySelectorAll("img");
     // Deduplicate urls
     const urls = new Set();
-    if (ev.target.tagName.toLowerCase() === "img") urls.add(ev.target.src); // include target if it's an img element
+    if (target.tagName.toLowerCase() === "img") urls.add(target.src); // include target if it's an img element
     for (const i of imgs) urls.add(i.src);
     // Ask for confirmation when opening > 5 tabs
     if (urls.size > 5 && last_size !== urls.size) {
@@ -30,5 +36,12 @@
     last_size = null;
     // Open all images
     for (const u of urls) if (u != null) GM_openInTab(u);
-  });
+  }, {capture: true});
+  // Block other click events on alt-click
+  function blockOnAlt(event) {
+    if (!event.altKey) return;
+    event.stopImmediatePropagation();
+  }
+  document.body.addEventListener("mouseup", blockOnAlt, {capture: true});
+  document.body.addEventListener("mousedown", blockOnAlt, {capture: true});
 })();
