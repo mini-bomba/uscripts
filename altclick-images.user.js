@@ -7,6 +7,7 @@
 // @grant       GM_openInTab
 // @grant       GM_notification
 // @run-at      document-start
+// @homepageURL https://github.com/mini-bomba/uscripts
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/altclick-images.user.js
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/altclick-images.user.js
 // @author      mini_bomba
