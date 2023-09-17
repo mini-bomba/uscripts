@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.0
+// @version     1.0.1
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -14,6 +14,7 @@
   let last_size = null;
   document.body.addEventListener("click", ev => {
     if (!ev.altKey) return;
+    ev.preventDefault();
     // Find all img elements under the element
     const imgs = ev.target.querySelectorAll("img");
     // Deduplicate urls
