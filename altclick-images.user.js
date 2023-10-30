@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.3.1
+// @version     1.3.2
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
