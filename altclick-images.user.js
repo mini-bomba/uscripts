@@ -17,6 +17,31 @@
   function isTag(element, tag) {
     return element.tagName.toLowerCase() === tag.toLowerCase();
   }
+  function compareBoundingRects(e1, e2) {
+    const r1 = e1.getBoundingClientRect();
+    const r2 = e2.getBoundingClientRect();
+    return r1.top === r2.top && r1.right === r2.right && r1.bottom === r2.bottom && r1.left === r2.left;
+  }
+  function findNearestOverflowContainer(element) {
+    if (element !== document.body) element = element.parentElement;
+    while (element !== document.body && window.getComputedStyle(element).overflowX === "visible" && window.getComputedStyle(element).overflowY === "visible") {
+      element = element.parentElement;
+    }
+    return element;
+  }
+  function checkVisible(element) {
+    if(!element.checkVisibility()) return false;  // display: none
+    const container = findNearestOverflowContainer(element);
+    if (container !== document.body && !checkVisible(container)) return false;
+    const containerStyle = window.getComputedStyle(container);
+    const element_rect = element.getBoundingClientRect();
+    const container_rect = container.getBoundingClientRect();
+    const body_rect = document.body.getBoundingClientRect();
+    return element_rect.right > body_rect.left && element_rect.bottom > body_rect.top &&              // cut off by body's      left or top edge
+           element_rect.right > container_rect.left && element_rect.bottom > container_rect.top &&    // cut off by container's left or top edge
+          (containerStyle.overflowX !== "hidden" || element_rect.left < container_rect.right) &&      // cut off by container's right edge when overflow-x: hidden
+          (containerStyle.overflowY !== "hidden" || element_rect.top < container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
+  }
   document.addEventListener("click", ev => {
     if (!ev.altKey) return;
     ev.preventDefault();
@@ -25,7 +50,7 @@
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
     if (target.classList.contains("photo-notes-scrappy-view")) target = target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? target;
     // If parent element has the same size as current element, go up
-    while (target.parentElement != null && target.clientWidth === target.parentElement.clientWidth && target.clientHeight == target.parentElement.clientHeight) {
+    while (target.parentElement != null && compareBoundingRects(target, target.parentElement)) {
       target = target.parentElement;
     }
     // If no images found - go up one more time
@@ -44,10 +69,15 @@
       urls.add(target.href.animVal);
     }
     // Add any images found
-    for (const i of imgs) urls.add(i.src);
+    for (const i of imgs) {
+      if (checkVisible(i))
+        urls.add(i.src)
+    }
     for (const i of images) {
-      urls.add(i.href.baseVal);
-      urls.add(i.href.animVal);
+      if (checkVisible(i)){
+        urls.add(i.href.baseVal);
+        urls.add(i.href.animVal);
+      } 
     }
     // Ask for confirmation when opening > 5 tabs
     if (urls.size > 5 && last_size !== urls.size) {
