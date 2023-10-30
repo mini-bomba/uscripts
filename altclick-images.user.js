@@ -47,6 +47,12 @@
     ev.preventDefault();
     ev.stopImmediatePropagation();
     let target = ev.target;
+    const target_rect = target.getBoundingClientRect()
+    // If a pseudoelement is clicked, and it has absolute positioning, start search at the nearest positioned element
+    if ((ev.clientX > target_rect.right || ev.clientX < target_rect.left || ev.clientY > target_rect.bottom || ev.clientY < target_rect.top) && (window.getComputedStyle(target, ":before").position !== "static" || window.getComputedStyle(target, ":after").position !== "static")) {
+      while (window.getComputedStyle(target).position === "static" && target !== document.body)
+        target = target.parentElement;
+    }
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
     if (target.classList.contains("photo-notes-scrappy-view")) target = target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? target;
     // If parent element has the same size as current element, go up
@@ -77,7 +83,7 @@
       if (checkVisible(i)){
         urls.add(i.href.baseVal);
         urls.add(i.href.animVal);
-      } 
+      }
     }
     // Ask for confirmation when opening > 5 tabs
     if (urls.size > 5 && last_size !== urls.size) {
