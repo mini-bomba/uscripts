@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.3.2
+// @version     1.3.3
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -13,6 +13,7 @@
 // @author      mini_bomba
 // ==/UserScript==
 (function (){
+  const CSS_URL_REGEX = /url\("(.+)"\)/;
   let last_size = null;
   function isTag(element, tag) {
     return element.tagName.toLowerCase() === tag.toLowerCase();
@@ -41,6 +42,11 @@
            element_rect.right > container_rect.left && element_rect.bottom > container_rect.top &&    // cut off by container's left or top edge
           (containerStyle.overflowX !== "hidden" || element_rect.left < container_rect.right) &&      // cut off by container's right edge when overflow-x: hidden
           (containerStyle.overflowY !== "hidden" || element_rect.top < container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
+  }
+  function scanForBackgroundImage(element, results) {
+    const url = CSS_URL_REGEX.exec(window.getComputedStyle(element).backgroundImage);
+    if (url != null && checkVisible(element)) results.add(url[1]);
+    for (const child of element.children) scanForBackgroundImage(child, results);
   }
   document.addEventListener("click", ev => {
     if (!ev.altKey) return;
@@ -84,6 +90,12 @@
         urls.add(i.href.baseVal);
         urls.add(i.href.animVal);
       }
+    }
+    // Also try to check any background-image CSS rules
+    try {
+      scanForBackgroundImage(target, urls);
+    } catch (e) {
+      console.error("Failed to scan for CSS images", e);
     }
     // Ask for confirmation when opening > 5 tabs
     if (urls.size > 5 && last_size !== urls.size) {
