@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.3.4
+// @version     1.4.0
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -47,6 +47,11 @@
     const url = CSS_URL_REGEX.exec(window.getComputedStyle(element).backgroundImage);
     if (url != null && checkVisible(element)) results.add(url[1]);
     for (const child of element.children) scanForBackgroundImage(child, results);
+  }
+  function googleSearch(u) {
+    const url = new URL("https://lens.google.com/uploadbyurl");
+    url.searchParams.set("url", u);
+    return url.toString();
   }
   document.addEventListener("click", ev => {
     if (!ev.altKey) return;
@@ -117,7 +122,7 @@
     }
     last_size = null;
     // Open all images
-    for (const u of urls) if (u != null) GM_openInTab(u);
+    for (const u of urls) if (u != null) GM_openInTab(ev.ctrlKey ? googleSearch(u) : u);
   }, {capture: true});
   // Block other click events on alt-click
   function blockOnAlt(event) {
