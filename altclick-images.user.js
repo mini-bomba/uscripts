@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.3.3
+// @version     1.3.4
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -52,50 +52,62 @@
     if (!ev.altKey) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
-    let target = ev.target;
-    const target_rect = target.getBoundingClientRect()
+    let main_target = ev.target;
+    const target_rect = main_target.getBoundingClientRect()
     // If a pseudoelement is clicked, and it has absolute positioning, start search at the nearest positioned element
-    if ((ev.clientX > target_rect.right || ev.clientX < target_rect.left || ev.clientY > target_rect.bottom || ev.clientY < target_rect.top) && (window.getComputedStyle(target, ":before").position !== "static" || window.getComputedStyle(target, ":after").position !== "static")) {
-      while (window.getComputedStyle(target).position === "static" && target !== document.body)
-        target = target.parentElement;
+    if ((ev.clientX > target_rect.right || ev.clientX < target_rect.left || ev.clientY > target_rect.bottom || ev.clientY < target_rect.top) && (window.getComputedStyle(main_target, ":before").position !== "static" || window.getComputedStyle(main_target, ":after").position !== "static")) {
+      while (window.getComputedStyle(main_target).position === "static" && target !== document.body)
+        main_target = main_target.parentElement;
     }
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
-    if (target.classList.contains("photo-notes-scrappy-view")) target = target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? target;
+    if (main_target.classList.contains("photo-notes-scrappy-view")) main_target = main_target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? main_target;
     // If parent element has the same size as current element, go up
-    while (target.parentElement != null && compareBoundingRects(target, target.parentElement)) {
-      target = target.parentElement;
+    while (main_target.parentElement != null && compareBoundingRects(main_target, main_target.parentElement)) {
+      main_target = main_target.parentElement;
     }
-    // If no images found - go up one more time
-    if (!isTag(target, "img") && !isTag(target, "image") && target.parentElement != null && target.querySelector("img, image") == null) {
-      target = target.parentElement;
-    }
-    // Find all img elements under the element
-    const imgs = target.querySelectorAll("img");
-    const images = target.querySelectorAll("image");
-    // Collect URLs
-    const urls = new Set();
-    // Check if target is an image
-    if (isTag(target, "img")) urls.add(target.src);
-    if (isTag(target, "image")) {
-      urls.add(target.href.baseVal);
-      urls.add(target.href.animVal);
-    }
-    // Add any images found
-    for (const i of imgs) {
-      if (checkVisible(i))
-        urls.add(i.src)
-    }
-    for (const i of images) {
-      if (checkVisible(i)){
-        urls.add(i.href.baseVal);
-        urls.add(i.href.animVal);
+    const targets = [main_target]
+    // If the element has an aria-controls attribute, search these too
+    const aria_controls = main_target.getAttribute("aria-controls");
+    if (aria_controls != null) {
+      for (const id of aria_controls.split(" ")) {
+        const element = document.getElementById(id);
+        if (element != null) targets.push(element);
       }
     }
-    // Also try to check any background-image CSS rules
-    try {
-      scanForBackgroundImage(target, urls);
-    } catch (e) {
-      console.error("Failed to scan for CSS images", e);
+    // Collect URLs
+    const urls = new Set();
+    // For each target:
+    for (let target of targets) {
+      // If no images found - go up one more time
+      if (!isTag(target, "img") && !isTag(target, "image") && target.parentElement != null && target.querySelector("img, image") == null) {
+        target = target.parentElement;
+      }
+      // Find all img elements under the element
+      const imgs = target.querySelectorAll("img");
+      const images = target.querySelectorAll("image");
+      // Check if target is an image
+      if (isTag(target, "img")) urls.add(target.src);
+      if (isTag(target, "image")) {
+        urls.add(target.href.baseVal);
+        urls.add(target.href.animVal);
+      }
+      // Add any images found
+      for (const i of imgs) {
+        if (checkVisible(i))
+          urls.add(i.src)
+      }
+      for (const i of images) {
+        if (checkVisible(i)){
+          urls.add(i.href.baseVal);
+          urls.add(i.href.animVal);
+        }
+      }
+      // Also try to check any background-image CSS rules
+      try {
+        scanForBackgroundImage(target, urls);
+      } catch (e) {
+        console.error("Failed to scan for CSS images", e);
+      }
     }
     // Ask for confirmation when opening > 5 tabs
     if (urls.size > 5 && last_size !== urls.size) {
