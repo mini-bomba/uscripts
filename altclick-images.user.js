@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.4.0
+// @version     1.4.1
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -49,8 +49,9 @@
     for (const child of element.children) scanForBackgroundImage(child, results);
   }
   function googleSearch(u) {
-    const url = new URL("https://lens.google.com/uploadbyurl");
-    url.searchParams.set("url", u);
+    const url = new URL("https://images.google.com/searchbyimage");
+    url.searchParams.set("image_url", u);
+    url.searchParams.set("client", "app");
     return url.toString();
   }
   document.addEventListener("click", ev => {
