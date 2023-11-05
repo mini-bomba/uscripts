@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.4.1
+// @version     1.4.2
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -91,6 +91,7 @@
       // Find all img elements under the element
       const imgs = target.querySelectorAll("img");
       const images = target.querySelectorAll("image");
+      const pictures = target.querySelectorAll("picture");
       // Check if target is an image
       if (isTag(target, "img")) urls.add(target.src);
       if (isTag(target, "image")) {
@@ -106,6 +107,15 @@
         if (checkVisible(i)){
           urls.add(i.href.baseVal);
           urls.add(i.href.animVal);
+        }
+      }
+      for (const p of pictures) {
+        if (checkVisible(p)){
+          for (const s of p.querySelectorAll("source")) {
+            for (const url of s.srcset.split(",").map(x => x.trim().split(" ")[0])) {
+              urls.add(url);
+            }
+          }
         }
       }
       // Also try to check any background-image CSS rules
