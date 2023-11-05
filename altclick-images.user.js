@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.4.2
+// @version     1.4.3
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -46,7 +46,7 @@
   function scanForBackgroundImage(element, results) {
     const url = CSS_URL_REGEX.exec(window.getComputedStyle(element).backgroundImage);
     if (url != null && checkVisible(element)) results.add(url[1]);
-    for (const child of element.children) scanForBackgroundImage(child, results);
+    if (element.nodeName !== "PICTURE") for (const child of element.children) scanForBackgroundImage(child, results);
   }
   function googleSearch(u) {
     const url = new URL("https://images.google.com/searchbyimage");
@@ -100,7 +100,7 @@
       }
       // Add any images found
       for (const i of imgs) {
-        if (checkVisible(i))
+        if (i.closest("picture") == null && checkVisible(i))
           urls.add(i.src)
       }
       for (const i of images) {
@@ -111,9 +111,18 @@
       }
       for (const p of pictures) {
         if (checkVisible(p)){
+          let anyMatched = false;
           for (const s of p.querySelectorAll("source")) {
-            for (const url of s.srcset.split(",").map(x => x.trim().split(" ")[0])) {
-              urls.add(url);
+            if (!s.media || matchMedia(s.media).matches) {
+              anyMatched = true;
+              for (const url of s.srcset.split(",").map(x => x.trim().split(" ")[0])) {
+                urls.add(url);
+              }
+            }
+          }
+          if (!anyMatched) {
+            for (const i of p.querySelectorAll("img")) {
+                urls.add(i.src)
             }
           }
         }
