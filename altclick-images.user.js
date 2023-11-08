@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.4.3
+// @version     1.4.4
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -84,9 +84,9 @@
     const urls = new Set();
     // For each target:
     for (let target of targets) {
-      // If no images found - go up one more time
+      // If no images found - go up one more time, or to the root of the svg element
       if (!isTag(target, "img") && !isTag(target, "image") && target.parentElement != null && target.querySelector("img, image") == null) {
-        target = target.parentElement;
+        target = target.closest("svg") ?? target.parentElement;
       }
       // Find all img elements under the element
       const imgs = target.querySelectorAll("img");
