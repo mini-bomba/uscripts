@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.4.4
+// @version     1.4.5
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -62,7 +62,7 @@
     const target_rect = main_target.getBoundingClientRect()
     // If a pseudoelement is clicked, and it has absolute positioning, start search at the nearest positioned element
     if ((ev.clientX > target_rect.right || ev.clientX < target_rect.left || ev.clientY > target_rect.bottom || ev.clientY < target_rect.top) && (window.getComputedStyle(main_target, ":before").position !== "static" || window.getComputedStyle(main_target, ":after").position !== "static")) {
-      while (window.getComputedStyle(main_target).position === "static" && target !== document.body)
+      while (window.getComputedStyle(main_target).position === "static" && main_target !== document.body)
         main_target = main_target.parentElement;
     }
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
