@@ -46,7 +46,7 @@
   function scanForBackgroundImage(element, results) {
     const url = CSS_URL_REGEX.exec(window.getComputedStyle(element).backgroundImage);
     if (url != null && checkVisible(element)) results.add(url[1]);
-    if (element.nodeName !== "PICTURE") for (const child of element.children) scanForBackgroundImage(child, results);
+    if (isTag(element, "picture")) for (const child of element.children) scanForBackgroundImage(child, results);
   }
   function googleSearch(u) {
     const url = new URL("https://images.google.com/searchbyimage");
@@ -58,6 +58,7 @@
     if (!ev.altKey) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
+    console.log(ev.target);
     let main_target = ev.target;
     const target_rect = main_target.getBoundingClientRect()
     // If a pseudoelement is clicked, and it has absolute positioning, start search at the nearest positioned element
@@ -84,19 +85,29 @@
     const urls = new Set();
     // For each target:
     for (let target of targets) {
+      // If this is an <img> or <source> in a <picture>, start at <picture>
+      if (isTag(target, "img") || isTag(target, "source")) {
+        target = target.closest("picture") ?? target;
+      }
       // If no images found - go up one more time, or to the root of the svg element
-      if (!isTag(target, "img") && !isTag(target, "image") && target.parentElement != null && target.querySelector("img, image") == null) {
+      if (!isTag(target, "img") && !isTag(target, "image") && !isTag(target, "picture") && target.parentElement != null && target.querySelector("img, image, picture") == null) {
         target = target.closest("svg") ?? target.parentElement;
       }
       // Find all img elements under the element
-      const imgs = target.querySelectorAll("img");
-      const images = target.querySelectorAll("image");
-      const pictures = target.querySelectorAll("picture");
+      const imgs = Array.from(target.querySelectorAll("img"));
+      const images = Array.from(target.querySelectorAll("image"));
+      const pictures = Array.from(target.querySelectorAll("picture"));
       // Check if target is an image
-      if (isTag(target, "img")) urls.add(target.src);
-      if (isTag(target, "image")) {
-        urls.add(target.href.baseVal);
-        urls.add(target.href.animVal);
+      switch(target.nodeName) {
+        case "IMG":
+          imgs.push(target);
+          break;
+        case "IMAGE":
+          images.push(target);
+          break;
+        case "PICTURE":
+          pictures.push(target);
+          break;
       }
       // Add any images found
       for (const i of imgs) {
