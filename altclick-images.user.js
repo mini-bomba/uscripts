@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.4.5
+// @version     1.4.6
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -126,9 +126,11 @@
           for (const s of p.querySelectorAll("source")) {
             if (!s.media || matchMedia(s.media).matches) {
               anyMatched = true;
-              for (const url of s.srcset.split(",").map(x => x.trim().split(" ")[0])) {
-                urls.add(url);
-              }
+              const sources = s.srcset.split(",").map(x => {
+                const parts = x.trim().split(" ");
+                return [parts[0], parseFloat(parts[1]) ?? 1]
+              })
+              urls.add(sources.sort((a,b) => b[1]-a[1])[0][0]);
             }
           }
           if (!anyMatched) {
