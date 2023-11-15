@@ -2,10 +2,13 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.4.6
+// @version     1.5.0
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @grant       GM_registerMenuCommand
 // @run-at      document-start
 // @homepageURL https://github.com/mini-bomba/uscripts
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/altclick-images.user.js
@@ -13,6 +16,10 @@
 // @author      mini_bomba
 // ==/UserScript==
 (function (){
+  const DEFAULT_SETTINGS = {
+    "open-in-new-tab": true,
+    "search-in-new-tab": true,
+  }
   const CSS_URL_REGEX = /url\("(.+)"\)/;
   let last_size = null;
   function isTag(element, tag) {
@@ -54,6 +61,18 @@
     url.searchParams.set("client", "app");
     return url.toString();
   }
+  function waitUntilInteractive() {
+    if (document.readyState == "loading") {
+      return new Promise((res, _) => {
+        document.addEventListener("readystatechange", e => res(), {once: true});
+      });
+    } else {
+      return Promise.resolve();
+    }
+  }
+  function getSetting(key) {
+    return GM_getValue(key, DEFAULT_SETTINGS[key]);
+  }
   document.addEventListener("click", ev => {
     if (!ev.altKey) return;
     ev.preventDefault();
@@ -82,7 +101,7 @@
       }
     }
     // Collect URLs
-    const urls = new Set();
+    let urls = new Set();
     // For each target:
     for (let target of targets) {
       // If this is an <img> or <source> in a <picture>, start at <picture>
@@ -155,7 +174,13 @@
     }
     last_size = null;
     // Open all images
+    urls = Array.from(urls);
+    let first_url = undefined;
+    if (!getSetting(ev.ctrlKey ? "search-in-new-tab" : "open-in-new-tab")) {
+      first_url = urls.shift();
+    }
     for (const u of urls) if (u != null) GM_openInTab(ev.ctrlKey ? googleSearch(u) : u);
+    if (first_url != undefined) window.location = ev.ctrlKey ? googleSearch(first_url) : first_url;
   }, {capture: true});
   // Block other click events on alt-click
   function blockOnAlt(event) {
@@ -164,4 +189,41 @@
   }
   document.addEventListener("mouseup", blockOnAlt, {capture: true});
   document.addEventListener("mousedown", blockOnAlt, {capture: true});
+
+  // Configuration page
+  function handleSettingChange(event) {
+    if (isTag(event.target, "input") && event.target.checkValidity()) switch (event.target.type) {
+      case "checkbox":
+        GM_setValue(event.target.id, event.target.checked);
+        break;
+      case "number":
+        let val = new Number(event.target.value)
+        if (!isNaN(val)) GM_setValue(event.target.id, val);
+        break;
+      default:
+        GM_setValue(event.target.id, event.target.value);
+    }
+  }
+  async function handleConfigPage() {
+    await waitUntilInteractive(); // Wait until we've loaded the DOM
+
+    const settings = document.getElementById("settings");
+    for (const setting of settings.querySelectorAll("input")) {
+      if (setting.type === "checkbox") {
+        setting.checked = getSetting(setting.id);
+      } else {
+        setting.value = getSetting(setting.id);
+      }
+    }
+    settings.addEventListener("change", handleSettingChange);
+
+    document.getElementById("not-installed").classList.add("hidden");
+    settings.classList.remove("hidden");
+  }
+
+  if (window.location == "https://uscripts.minibomba.pro/altclick-images") {
+    window.addEventListener("mbusc-altclick-images", e => e.preventDefault()); // Config page uses this to verify the script is installed
+    handleConfigPage();
+  }
+  GM_registerMenuCommand("Open settings", () => GM_openInTab("https://uscripts.minibomba.pro/altclick-images"));
 })();
