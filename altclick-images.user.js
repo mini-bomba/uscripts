@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.5.0
+// @version     1.5.1
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -77,7 +77,6 @@
     if (!ev.altKey) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
-    console.log(ev.target);
     let main_target = ev.target;
     const target_rect = main_target.getBoundingClientRect()
     // If a pseudoelement is clicked, and it has absolute positioning, start search at the nearest positioned element
@@ -145,7 +144,7 @@
           for (const s of p.querySelectorAll("source")) {
             if (!s.media || matchMedia(s.media).matches) {
               anyMatched = true;
-              const sources = s.srcset.split(",").map(x => {
+              const sources = s.srcset.split(", ").map(x => {
                 const parts = x.trim().split(" ");
                 return [parts[0], parseFloat(parts[1]) ?? 1]
               })
