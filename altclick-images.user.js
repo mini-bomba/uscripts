@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.5.1
+// @version     1.5.2
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -19,6 +19,8 @@
   const DEFAULT_SETTINGS = {
     "open-in-new-tab": true,
     "search-in-new-tab": true,
+    "debug-logs": false,
+    "debug-breakpoints": false,
   }
   const CSS_URL_REGEX = /url\("(.+)"\)/;
   let last_size = null;
@@ -52,8 +54,13 @@
   }
   function scanForBackgroundImage(element, results) {
     const url = CSS_URL_REGEX.exec(window.getComputedStyle(element).backgroundImage);
-    if (url != null && checkVisible(element)) results.add(url[1]);
-    if (isTag(element, "picture")) for (const child of element.children) scanForBackgroundImage(child, results);
+    if (url != null) {
+      if (checkVisible(element)) {
+        results.add(url[1]);
+        if (getSetting("debug-logs")) console.log("Found backgroundImage URL", url[1], "on", element);
+      } else if (getSetting("debug-logs")) console.log("backgroundImage of", element, "discarded due to visibility checks");
+    }
+    if (!isTag(element, "picture")) for (const child of element.children) scanForBackgroundImage(child, results);
   }
   function googleSearch(u) {
     const url = new URL("https://images.google.com/searchbyimage");
@@ -77,38 +84,53 @@
     if (!ev.altKey) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
+    if (getSetting("debug-breakpoints")) debugger;
     let main_target = ev.target;
+    if (getSetting("debug-logs")) console.log("Clicked on", main_target);
     const target_rect = main_target.getBoundingClientRect()
     // If a pseudoelement is clicked, and it has absolute positioning, start search at the nearest positioned element
     if ((ev.clientX > target_rect.right || ev.clientX < target_rect.left || ev.clientY > target_rect.bottom || ev.clientY < target_rect.top) && (window.getComputedStyle(main_target, ":before").position !== "static" || window.getComputedStyle(main_target, ":after").position !== "static")) {
+      if (getSetting("debug-logs")) console.log("Pseudoelement clicked, going up");
       while (window.getComputedStyle(main_target).position === "static" && main_target !== document.body)
         main_target = main_target.parentElement;
+      if (getSetting("debug-logs")) console.log("Pseudoelement loop finished at", main_target);
     }
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
     if (main_target.classList.contains("photo-notes-scrappy-view")) main_target = main_target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? main_target;
     // If parent element has the same size as current element, go up
     while (main_target.parentElement != null && compareBoundingRects(main_target, main_target.parentElement)) {
+      if (getSetting("debug-logs")) console.log("Same-size element, going up");
       main_target = main_target.parentElement;
     }
     const targets = [main_target]
     // If the element has an aria-controls attribute, search these too
     const aria_controls = main_target.getAttribute("aria-controls");
     if (aria_controls != null) {
+      if (getSetting("debug-logs")) console.log("aria-controls found on main target, adding these to target list");
       for (const id of aria_controls.split(" ")) {
         const element = document.getElementById(id);
-        if (element != null) targets.push(element);
+        if (element != null) {
+          targets.push(element);
+          if (getSetting("debug-logs")) console.log("Added", element);
+        }
       }
     }
+    if (getSetting("debug-logs")) console.log("Final list of targets", targets);
     // Collect URLs
     let urls = new Set();
     // For each target:
     for (let target of targets) {
       // If this is an <img> or <source> in a <picture>, start at <picture>
       if (isTag(target, "img") || isTag(target, "source")) {
-        target = target.closest("picture") ?? target;
+        const closest_picture = target.closest("picture")
+        if (closest_picture != null) {
+          if (getSetting("debug-logs")) console.log("Going up on target", target, "due to an enclosing <picture> element");
+          target = closest_picture;
+        }
       }
       // If no images found - go up one more time, or to the root of the svg element
       if (!isTag(target, "img") && !isTag(target, "image") && !isTag(target, "picture") && target.parentElement != null && target.querySelector("img, image, picture") == null) {
+        if (getSetting("debug-logs")) console.log("Going up on target", target, "due to a lack of images");
         target = target.closest("svg") ?? target.parentElement;
       }
       // Find all img elements under the element
@@ -129,13 +151,18 @@
       }
       // Add any images found
       for (const i of imgs) {
-        if (i.closest("picture") == null && checkVisible(i))
+        if (i.closest("picture") == null && checkVisible(i)) {
           urls.add(i.src)
+        } else {
+          if (getSetting("debug-logs")) console.log(i, "discarded due to visibility/<picture> checks");
+        }
       }
       for (const i of images) {
         if (checkVisible(i)){
           urls.add(i.href.baseVal);
           urls.add(i.href.animVal);
+        } else {
+          if (getSetting("debug-logs")) console.log(i, "discarded due to visibility checks");
         }
       }
       for (const p of pictures) {
@@ -156,6 +183,8 @@
                 urls.add(i.src)
             }
           }
+        } else {
+          if (getSetting("debug-logs")) console.log(i, "discarded due to visibility checks");
         }
       }
       // Also try to check any background-image CSS rules
@@ -174,6 +203,7 @@
     last_size = null;
     // Open all images
     urls = Array.from(urls);
+    if (getSetting("debug-logs")) console.log("Final list of URLs", urls);
     let first_url = undefined;
     if (!getSetting(ev.ctrlKey ? "search-in-new-tab" : "open-in-new-tab")) {
       first_url = urls.shift();
