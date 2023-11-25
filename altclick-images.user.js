@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.5.3
+// @version     1.5.4
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -19,6 +19,7 @@
   const DEFAULT_SETTINGS = {
     "open-in-new-tab": true,
     "search-in-new-tab": true,
+    "focus-on-new-tab": true,
     "debug-logs": false,
     "debug-breakpoints": false,
   }
@@ -214,7 +215,7 @@
     if (!getSetting(ev.ctrlKey ? "search-in-new-tab" : "open-in-new-tab")) {
       first_url = urls.shift();
     }
-    for (const u of urls) if (u != null) GM_openInTab(ev.ctrlKey ? googleSearch(u) : u);
+    for (const u of urls) if (u != null) GM_openInTab(ev.ctrlKey ? googleSearch(u) : u, { active: getSetting("focus-on-new-tab"), insert: true });
     if (first_url != undefined) window.location = ev.ctrlKey ? googleSearch(first_url) : first_url;
   }, {capture: true});
   // Block other click events on alt-click
