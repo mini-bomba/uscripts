@@ -12,11 +12,12 @@
 // ==/UserScript==
 //
 // Available shortcuts:
+// Number keys:      Switch cameras
 // Left/Right arrow: seek (5s)
-// Up/Down arrow: volume up/down
-// M: mute/unmute
-// Space/K: pause/unpause
-// F: toggle fullscreen
+// Up/Down arrow:    volume up/down
+// M:                mute/unmute
+// Space/K:          pause/unpause
+// F:                toggle fullscreen
 let saved_player_volume = 0;
 document.addEventListener("keydown", ev => {
   ev.preventDefault();
