@@ -4,7 +4,7 @@
 // @description Adds keyboard shortcut support to sejm.gov.pl live streams
 // @match       *://sejm-embed.redcdn.pl/Sejm10.nsf/VideoFrame.xsp/*
 // @grant       none
-// @version     1.0.1
+// @version     1.1.0
 // @homepageURL https://github.com/mini-bomba/uscripts
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/sejm.gov.pl-shortcuts.user.js
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/sejm.gov.pl-shortcuts.user.js
@@ -12,12 +12,13 @@
 // ==/UserScript==
 //
 // Available shortcuts:
-// Number keys:      Switch cameras
-// Left/Right arrow: seek (5s)
-// Up/Down arrow:    volume up/down
-// M:                mute/unmute
-// Space/K:          pause/unpause
-// F:                toggle fullscreen
+// Number keys:          Switch cameras
+// J/L/Left/Right arrow: seek (5s)
+// Up/Down arrow:        volume up/down
+// M:                    mute/unmute
+// Space/K:              pause/unpause
+// F:                    toggle fullscreen
+// E:                    toggle event list visibility in fullscreen mode
 let saved_player_volume = 0;
 document.addEventListener("keydown", ev => {
   const numberkey_value = parseInt(ev.key);
@@ -26,9 +27,13 @@ document.addEventListener("keydown", ev => {
   }
   switch (ev.key) {
     case "ArrowLeft":
+    case "j":
+    case "J":
       seek(-5);
       break;
     case "ArrowRight":
+    case "l":
+    case "L":
       seek(5);
       break;
     case "ArrowUp":
@@ -56,5 +61,20 @@ document.addEventListener("keydown", ev => {
         saved_player_volume = vol;
         player.setVolume(0);
       }
+      break;
+    case "e":
+    case "E":
+      document.getElementById("redcdnplayer").classList.toggle("event-list-visible");
+      break;
   }
 });
+const style_element = document.createElement("style");
+style_element.innerHTML = `
+.mode-fullscreen.event-list-visible .atdsplayer-messages {
+  display: block;
+}
+.mode-fullscreen.event-list-visible .atdsplayer-messages > *:not(.atdsplayer-event-list) {
+  display: none;
+}
+`;
+document.head.appendChild(style_element);
