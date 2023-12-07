@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.5.4
+// @version     1.5.5
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -233,7 +233,7 @@
         GM_setValue(event.target.id, event.target.checked);
         break;
       case "number":
-        let val = new Number(event.target.value)
+        let val = Number(event.target.value)
         if (!isNaN(val)) GM_setValue(event.target.id, val);
         break;
       default:
