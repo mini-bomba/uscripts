@@ -3,7 +3,7 @@
 // @namespace   uscripts.minibomba.pro
 // @match       https://sb.ltn.fi/*
 // @grant       none
-// @version     1.0
+// @version     1.0.1
 // @author      mini_bomba
 // @description Replaces the 🔒 icon in the votes column with a verified icon
 // @homepageURL https://github.com/mini-bomba/uscripts
@@ -11,9 +11,16 @@
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/sb.ltn.fi-verified-locks.user.js
 // ==/UserScript==
 (function (){
+  // Verified icon
   const verifiedIcon = document.createElement("img");
   verifiedIcon.classList.add("mb-verifiedicon");
   verifiedIcon.src = "https://cdn.discordapp.com/emojis/1041978575659741214.webp?size=96&quality=lossless";
+  // Fake 🔒 to stop the refresh script from recreating the lock icon
+  const fakeIcon = document.createElement("span");
+  fakeIcon.classList.add("mb-fakeicon");
+  fakeIcon.innerText = "🔒";
+  console.log(fakeIcon);
+  // Extra CSS
   const styles = document.createElement("style");
   styles.id = "mbsbbvl-styles";
   styles.innerHTML = `
@@ -21,12 +28,16 @@
     height: 1em;
     margin-left: 0.2em;
   }
+  span.mb-fakeicon {
+    font-size: 0;
+  }
   `
   document.head.appendChild(styles)
   function replaceIcons() {
     for (const lock of document.querySelectorAll('span[title="This segment is locked by a VIP"]')) {
       if (lock.querySelector("img.mb-verifiedicon") == null) {
         lock.innerText = "";
+        lock.appendChild(fakeIcon.cloneNode(true));
         lock.appendChild(verifiedIcon.cloneNode());
       }
     }
