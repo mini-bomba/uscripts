@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.2
+// @version     1.6.3
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -188,7 +188,7 @@
                 return [parts[0], parseFloat(parts[1]) ?? 1]
               })
               const best_url = sources.sort((a,b) => b[1]-a[1])[0][0];
-              const media_size = Number(NUMBER_REGEX.exec(s.media)[0])
+              const media_size = Number(NUMBER_REGEX.exec(s.media)?.[0])
               if (matched[best_url] == undefined || (!isNaN(media_size) && (isNaN(matched[best_url] || matched[best_url] < media_size)))) {
                 matched[best_url] = media_size
               }
