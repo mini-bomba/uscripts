@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.5.5
+// @version     1.6.0
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -17,9 +17,8 @@
 // ==/UserScript==
 (function (){
   const DEFAULT_SETTINGS = {
-    "open-in-new-tab": true,
-    "search-in-new-tab": true,
-    "focus-on-new-tab": true,
+    "image-tab-behaviour": "11",
+    "search-tab-behaviour": "11",
     "debug-logs": false,
     "debug-breakpoints": false,
   }
@@ -212,10 +211,10 @@
     urls = Array.from(urls);
     if (getSetting("debug-logs")) console.log("Final list of URLs", urls);
     let first_url = undefined;
-    if (!getSetting(ev.ctrlKey ? "search-in-new-tab" : "open-in-new-tab")) {
+    if (getSetting(ev.ctrlKey ? "search-tab-behaviour" : "image-tab-behaviour") == "00") {
       first_url = urls.shift();
     }
-    for (const u of urls) if (u != null) GM_openInTab(ev.ctrlKey ? googleSearch(u) : u, { active: getSetting("focus-on-new-tab"), insert: true });
+    for (const u of urls) if (u != null) GM_openInTab(ev.ctrlKey ? googleSearch(u) : u, { active: getSetting(ev.ctrlKey ? "search-tab-behaviour" : "image-tab-behaviour") == "11", insert: true });
     if (first_url != undefined) window.location = ev.ctrlKey ? googleSearch(first_url) : first_url;
   }, {capture: true});
   // Block other click events on alt-click
@@ -228,7 +227,7 @@
 
   // Configuration page
   function handleSettingChange(event) {
-    if (isTag(event.target, "input") && event.target.checkValidity()) switch (event.target.type) {
+    if ((isTag(event.target, "input") || isTag(event.target, "select")) && event.target.checkValidity()) switch (event.target.type) {
       case "checkbox":
         GM_setValue(event.target.id, event.target.checked);
         break;
@@ -244,7 +243,7 @@
     await waitUntilInteractive(); // Wait until we've loaded the DOM
 
     const settings = document.getElementById("settings");
-    for (const setting of settings.querySelectorAll("input")) {
+    for (const setting of settings.querySelectorAll("input, select")) {
       if (setting.type === "checkbox") {
         setting.checked = getSetting(setting.id);
       } else {
