@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.0
+// @version     1.6.1
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -47,10 +47,10 @@
     const element_rect = element.getBoundingClientRect();
     const container_rect = container.getBoundingClientRect();
     const body_rect = document.body.getBoundingClientRect();
-    return element_rect.right > body_rect.left && element_rect.bottom > body_rect.top &&              // cut off by body's      left or top edge
-           element_rect.right > container_rect.left && element_rect.bottom > container_rect.top &&    // cut off by container's left or top edge
-          (containerStyle.overflowX !== "hidden" || element_rect.left < container_rect.right) &&      // cut off by container's right edge when overflow-x: hidden
-          (containerStyle.overflowY !== "hidden" || element_rect.top < container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
+    return element_rect.right >= body_rect.left && element_rect.bottom >= body_rect.top &&              // cut off by body's      left or top edge
+           element_rect.right >= container_rect.left && element_rect.bottom >= container_rect.top &&    // cut off by container's left or top edge
+          (containerStyle.overflowX !== "hidden" || element_rect.left <= container_rect.right) &&      // cut off by container's right edge when overflow-x: hidden
+          (containerStyle.overflowY !== "hidden" || element_rect.top <= container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
   }
   function _scanForBackgroundImage(element, results, previously_scanned) {
     if (element == previously_scanned) return;
@@ -196,7 +196,7 @@
             }
           }
         } else {
-          if (getSetting("debug-logs")) console.log(i, "discarded due to visibility checks");
+          if (getSetting("debug-logs")) console.log(p, "discarded due to visibility checks");
         }
       }
     }
