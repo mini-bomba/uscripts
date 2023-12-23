@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.1
+// @version     1.6.2
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -23,6 +23,7 @@
     "debug-breakpoints": false,
   }
   const CSS_URL_REGEX = /url\("(.+)"\)/;
+  const NUMBER_REGEX = /\d+/;
   let last_size = null;
   function isTag(element, tag) {
     return element.tagName.toLowerCase() === tag.toLowerCase();
@@ -179,21 +180,30 @@
       }
       for (const p of pictures) {
         if (checkVisible(p)){
-          let anyMatched = false;
+          let matched = {};
           for (const s of p.querySelectorAll("source")) {
             if (!s.media || matchMedia(s.media).matches) {
-              anyMatched = true;
               const sources = s.srcset.split(", ").map(x => {
                 const parts = x.trim().split(" ");
                 return [parts[0], parseFloat(parts[1]) ?? 1]
               })
-              urls.add(sources.sort((a,b) => b[1]-a[1])[0][0]);
+              const best_url = sources.sort((a,b) => b[1]-a[1])[0][0];
+              const media_size = Number(NUMBER_REGEX.exec(s.media)[0])
+              if (matched[best_url] == undefined || (!isNaN(media_size) && (isNaN(matched[best_url] || matched[best_url] < media_size)))) {
+                matched[best_url] = media_size
+              }
             }
           }
-          if (!anyMatched) {
+          if (Object.keys(matched).length == 0) {
+            if (getSetting("debug-logs")) console.log(p, "had no <source> matches, using <img> fallback urls");
             for (const i of p.querySelectorAll("img")) {
                 urls.add(i.src)
             }
+          } else {
+            if (getSetting("debug-logs")) console.log("<source> matches for", p, matched);
+            const best_url = Object.entries(matched).sort((a, b) => b[1]-a[1])[0][0];
+            if (getSetting("debug-logs")) console.log(`Best match: ${best_url}`);
+            urls.add(best_url);
           }
         } else {
           if (getSetting("debug-logs")) console.log(p, "discarded due to visibility checks");
