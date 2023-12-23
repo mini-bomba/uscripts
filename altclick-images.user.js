@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.3
+// @version     1.6.4
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -108,8 +108,8 @@
     }
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
     if (main_target.classList.contains("photo-notes-scrappy-view")) main_target = main_target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? main_target;
-    // If parent element has the same size as current element, go up
-    while (main_target.parentElement != null && compareBoundingRects(main_target, main_target.parentElement)) {
+    // If parent element has the same size as current element, but is not an image itself, go up
+    while (main_target.parentElement != null && !isTag(main_target, "img") && !isTag(main_target, "picture") && !isTag(main_target, "image") && compareBoundingRects(main_target, main_target.parentElement)) {
       if (getSetting("debug-logs")) console.log("Same-size element, going up");
       main_target = main_target.parentElement;
     }
