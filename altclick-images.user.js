@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.5
+// @version     1.6.6
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -66,8 +66,8 @@
     if (url != null) {
       if (checkVisible(element)) {
         results.add(url[1]);
-        if (getSetting("debug-logs")) console.log("Found backgroundImage URL", url[1], "on", element);
-      } else if (getSetting("debug-logs")) console.log("backgroundImage of", element, "discarded due to visibility checks");
+        debugLog("Found backgroundImage URL", url[1], "on", element);
+      } else debugLog("backgroundImage of", element, "discarded due to visibility checks");
     }
     for (const child of element.children) _scanForBackgroundImage(child, results, previously_scanned);
   }
@@ -104,36 +104,36 @@
     ev.stopImmediatePropagation();
     if (getSetting("debug-breakpoints")) debugger;
     let main_target = ev.target;
-    if (getSetting("debug-logs")) console.log("Clicked on", main_target);
+    debugLog("Clicked on", main_target);
     const target_rect = main_target.getBoundingClientRect()
     // If a pseudoelement is clicked, and it has absolute positioning, start search at the nearest positioned element
     if ((ev.clientX > target_rect.right || ev.clientX < target_rect.left || ev.clientY > target_rect.bottom || ev.clientY < target_rect.top) && (window.getComputedStyle(main_target, ":before").position !== "static" || window.getComputedStyle(main_target, ":after").position !== "static")) {
-      if (getSetting("debug-logs")) console.log("Pseudoelement clicked, going up");
+      debugLog("Pseudoelement clicked, going up");
       while (window.getComputedStyle(main_target).position === "static" && main_target !== document.body)
         main_target = main_target.parentElement;
-      if (getSetting("debug-logs")) console.log("Pseudoelement loop finished at", main_target);
+      debugLog("Pseudoelement loop finished at", main_target);
     }
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
     if (main_target.classList.contains("photo-notes-scrappy-view")) main_target = main_target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? main_target;
     // If parent element has the same size as current element, but is not an image itself, go up
     while (main_target.parentElement != null && !isTag(main_target, "img") && !isTag(main_target, "picture") && !isTag(main_target, "image") && compareBoundingRects(main_target, main_target.parentElement)) {
-      if (getSetting("debug-logs")) console.log("Same-size element, going up");
+      debugLog("Same-size element, going up");
       main_target = main_target.parentElement;
     }
     const targets = [main_target]
     // If the element has an aria-controls attribute, search these too
     const aria_controls = main_target.getAttribute("aria-controls");
     if (aria_controls != null) {
-      if (getSetting("debug-logs")) console.log("aria-controls found on main target, adding these to target list");
+      debugLog("aria-controls found on main target, adding these to target list");
       for (const id of aria_controls.split(" ")) {
         const element = document.getElementById(id);
         if (element != null) {
           targets.push(element);
-          if (getSetting("debug-logs")) console.log("Added", element);
+          debugLog("Added", element);
         }
       }
     }
-    if (getSetting("debug-logs")) console.log("Final list of targets", targets);
+    debugLog("Final list of targets", targets);
     // Collect URLs
     let urls = new Set();
     // For each target:
@@ -142,13 +142,13 @@
       if (isTag(target, "img") || isTag(target, "source")) {
         const closest_picture = target.closest("picture")
         if (closest_picture != null) {
-          if (getSetting("debug-logs")) console.log("Going up on target", target, "due to an enclosing <picture> element");
+          debugLog("Going up on target", target, "due to an enclosing <picture> element");
           target = closest_picture;
         }
       }
       // If no images found - go up one more time, or to the root of the svg element
       if (scanForBackgroundImage(target, urls) == 0 && !isTag(target, "img") && !isTag(target, "image") && !isTag(target, "picture") && target.parentElement != null && target.querySelector("img, image, picture") == null) {
-        if (getSetting("debug-logs")) console.log("Going up on target", target, "due to a lack of images");
+        debugLog("Going up on target", target, "due to a lack of images");
         const prev_target = target;
         target = target.closest("svg") ?? target.parentElement;
         scanForBackgroundImage(target, urls, prev_target);
@@ -174,7 +174,7 @@
         if (i.closest("picture") == null && checkVisible(i)) {
           urls.add(i.src)
         } else {
-          if (getSetting("debug-logs")) console.log(i, "discarded due to visibility/<picture> checks");
+          debugLog(i, "discarded due to visibility/<picture> checks");
         }
       }
       for (const i of images) {
@@ -182,7 +182,7 @@
           urls.add(i.href.baseVal);
           urls.add(i.href.animVal);
         } else {
-          if (getSetting("debug-logs")) console.log(i, "discarded due to visibility checks");
+          debugLog(i, "discarded due to visibility checks");
         }
       }
       for (const p of pictures) {
@@ -202,18 +202,18 @@
             }
           }
           if (Object.keys(matched).length == 0) {
-            if (getSetting("debug-logs")) console.log(p, "had no <source> matches, using <img> fallback urls");
+            debugLog(p, "had no <source> matches, using <img> fallback urls");
             for (const i of p.querySelectorAll("img")) {
                 urls.add(i.src)
             }
           } else {
-            if (getSetting("debug-logs")) console.log("<source> matches for", p, matched);
+            debugLog("<source> matches for", p, matched);
             const best_url = Object.entries(matched).sort((a, b) => b[1]-a[1])[0][0];
-            if (getSetting("debug-logs")) console.log(`Best match: ${best_url}`);
+            debugLog(`Best match: ${best_url}`);
             urls.add(best_url);
           }
         } else {
-          if (getSetting("debug-logs")) console.log(p, "discarded due to visibility checks");
+          debugLog(p, "discarded due to visibility checks");
         }
       }
     }
@@ -226,7 +226,7 @@
     last_size = null;
     // Open all images
     urls = Array.from(urls);
-    if (getSetting("debug-logs")) console.log("Final list of URLs", urls);
+    debugLog("Final list of URLs", urls);
     let first_url = undefined;
     if (getSetting(ev.ctrlKey ? "search-tab-behaviour" : "image-tab-behaviour") == "00") {
       first_url = urls.shift();
