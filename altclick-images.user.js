@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.4
+// @version     1.6.5
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -53,8 +53,15 @@
           (containerStyle.overflowX !== "hidden" || element_rect.left <= container_rect.right) &&      // cut off by container's right edge when overflow-x: hidden
           (containerStyle.overflowY !== "hidden" || element_rect.top <= container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
   }
+  function debugLog() {
+    if (getSetting("debug-logs")) console.log.apply(console, arguments);
+  }
   function _scanForBackgroundImage(element, results, previously_scanned) {
     if (element == previously_scanned) return;
+    if (isTag(element, "picture") || isTag(element, "img") || isTag(element, "image")) {
+      debugLog("Ending backgroundImage scan at picture/img/image", element);
+      return;
+    }
     const url = CSS_URL_REGEX.exec(window.getComputedStyle(element).backgroundImage);
     if (url != null) {
       if (checkVisible(element)) {
@@ -62,7 +69,7 @@
         if (getSetting("debug-logs")) console.log("Found backgroundImage URL", url[1], "on", element);
       } else if (getSetting("debug-logs")) console.log("backgroundImage of", element, "discarded due to visibility checks");
     }
-    if (!isTag(element, "picture")) for (const child of element.children) _scanForBackgroundImage(child, results, previously_scanned);
+    for (const child of element.children) _scanForBackgroundImage(child, results, previously_scanned);
   }
   function scanForBackgroundImage(element, results, previously_scanned) {
     const before = results.size;
