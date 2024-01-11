@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.6
+// @version     1.6.7
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -113,8 +113,19 @@
         main_target = main_target.parentElement;
       debugLog("Pseudoelement loop finished at", main_target);
     }
+
+    // == SITE-SPECIFIC FIXES == //
+
     // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
-    if (main_target.classList.contains("photo-notes-scrappy-view")) main_target = main_target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? main_target;
+    if (main_target.classList.contains("photo-notes-scrappy-view"))
+      main_target = main_target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? main_target;
+
+    // For lepictorium.fr: If we clicked under .preview-thumbnail-hover, go up to .thumb-container, then down to .preview-thumbnail
+    if (document.location.host.endsWith("lepictorium.fr") && main_target.closest(".preview-thumbnail-hover"))
+      main_target = main_target.closest(".thumb-container")?.querySelector(".preview-thumbnail") ?? main_target
+
+    // == END OF SITE-SPECIFIC FIXES == //
+
     // If parent element has the same size as current element, but is not an image itself, go up
     while (main_target.parentElement != null && !isTag(main_target, "img") && !isTag(main_target, "picture") && !isTag(main_target, "image") && compareBoundingRects(main_target, main_target.parentElement)) {
       debugLog("Same-size element, going up");
