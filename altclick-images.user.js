@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.8
+// @version     1.6.9
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -27,14 +27,17 @@
   const realConsoleLog = console.log.bind(console);
   let last_size = null;
 
+  // == HELPER FUNCTIONS == //
   function isTag(element, tag) {
     return element.tagName.toLowerCase() === tag.toLowerCase();
   }
+
   function compareBoundingRects(e1, e2) {
     const r1 = e1.getBoundingClientRect();
     const r2 = e2.getBoundingClientRect();
     return r1.top === r2.top && r1.right === r2.right && r1.bottom === r2.bottom && r1.left === r2.left;
   }
+
   function findNearestOverflowContainer(element) {
     if (element !== document.body) element = element.parentElement;
     while (element !== document.body && window.getComputedStyle(element).overflowX === "visible" && window.getComputedStyle(element).overflowY === "visible") {
@@ -42,6 +45,7 @@
     }
     return element;
   }
+
   function checkVisible(element) {
     if(!element.checkVisibility()) return false;  // display: none
     const container = findNearestOverflowContainer(element);
@@ -55,9 +59,11 @@
           (containerStyle.overflowX !== "hidden" || element_rect.left <= container_rect.right) &&      // cut off by container's right edge when overflow-x: hidden
           (containerStyle.overflowY !== "hidden" || element_rect.top <= container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
   }
+
   function debugLog() {
     if (getSetting("debug-logs")) realConsoleLog.apply(console, arguments);
   }
+
   function _scanForBackgroundImage(element, results, previously_scanned) {
     if (element == previously_scanned) return;
     if (isTag(element, "picture") || isTag(element, "img") || isTag(element, "image")) {
@@ -82,12 +88,22 @@
     }
     return results.size - before
   }
+
+  function pickBestSrcset(srcset) {
+    const sources = srcset.split(", ").map(x => {
+      const parts = x.trim().split(" ");
+      return [parts[0], parseFloat(parts[1]) ?? 1]
+    })
+    return sources.sort((a,b) => b[1]-a[1])[0][0];
+  }
+
   function googleSearch(u) {
     const url = new URL("https://images.google.com/searchbyimage");
     url.searchParams.set("image_url", u);
     url.searchParams.set("client", "app");
     return url.toString();
   }
+
   function waitUntilInteractive() {
     if (document.readyState == "loading") {
       return new Promise((res, _) => {
@@ -97,9 +113,13 @@
       return Promise.resolve();
     }
   }
+
   function getSetting(key) {
     return GM_getValue(key, DEFAULT_SETTINGS[key]);
   }
+
+
+  // == MAIN CODE == //
   document.addEventListener("click", ev => {
     if (!ev.altKey) return;
     ev.preventDefault();
@@ -185,7 +205,8 @@
       // Add any images found
       for (const i of imgs) {
         if (i.closest("picture") == null && checkVisible(i)) {
-          urls.add(i.src)
+          if (i.srcset) urls.add(pickBestSrcset(i.srcset))
+          else urls.add(i.src)
         } else {
           debugLog(i, "discarded due to visibility/<picture> checks");
         }
@@ -203,11 +224,7 @@
           let matched = {};
           for (const s of p.querySelectorAll("source")) {
             if (!s.media || matchMedia(s.media).matches) {
-              const sources = s.srcset.split(", ").map(x => {
-                const parts = x.trim().split(" ");
-                return [parts[0], parseFloat(parts[1]) ?? 1]
-              })
-              const best_url = sources.sort((a,b) => b[1]-a[1])[0][0];
+              const best_url = pickBestSrcset(s.srcset);
               const media_size = Number(NUMBER_REGEX.exec(s.media)?.[0])
               if (matched[best_url] == undefined || (!isNaN(media_size) && (isNaN(matched[best_url] || matched[best_url] < media_size)))) {
                 matched[best_url] = media_size
