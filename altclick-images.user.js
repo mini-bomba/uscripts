@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.7
+// @version     1.6.8
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -24,7 +24,9 @@
   }
   const CSS_URL_REGEX = /url\("(.+)"\)/;
   const NUMBER_REGEX = /\d+/;
+  const realConsoleLog = console.log.bind(console);
   let last_size = null;
+
   function isTag(element, tag) {
     return element.tagName.toLowerCase() === tag.toLowerCase();
   }
@@ -54,7 +56,7 @@
           (containerStyle.overflowY !== "hidden" || element_rect.top <= container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
   }
   function debugLog() {
-    if (getSetting("debug-logs")) console.log.apply(console, arguments);
+    if (getSetting("debug-logs")) realConsoleLog.apply(console, arguments);
   }
   function _scanForBackgroundImage(element, results, previously_scanned) {
     if (element == previously_scanned) return;
