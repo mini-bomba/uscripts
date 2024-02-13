@@ -19,7 +19,6 @@
   const fakeIcon = document.createElement("span");
   fakeIcon.classList.add("mb-fakeicon");
   fakeIcon.innerText = "🔒";
-  console.log(fakeIcon);
   // Extra CSS
   const styles = document.createElement("style");
   styles.id = "mbsbbvl-styles";
