@@ -3,7 +3,7 @@
 // @namespace   uscripts.minibomba.pro
 // @match       https://sb.ltn.fi/*
 // @grant       none
-// @version     1.0.1
+// @version     1.0.2
 // @author      mini_bomba
 // @description Replaces the 🔒 icon in the votes column with a verified icon
 // @homepageURL https://github.com/mini-bomba/uscripts
