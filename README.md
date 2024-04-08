@@ -4,6 +4,9 @@
 ### SB Browser (sb.ltn.fi)
 - [Verified locks](/sb.ltn.fi-verified-locks.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/sb.ltn.fi-verified-locks.user.js))
 
+### YouTube
+- [Audycja zawiera lokowanie produktu](/audycja_zawiera_lokowanie_produktu.user.js) - requires SponsorBlock ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js), [configure](https://uscripts.minibomba.pro/audycja_zawiera_lokowanie_produktu))
+
 ### Global userscripts
 - [Alt-click to open all images](/altclick-images.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/altclick-images.user.js), [configure](https://uscripts.minibomba.pro/altclick-images))
 
