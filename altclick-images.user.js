@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.9
+// @version     1.6.10
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -46,18 +46,27 @@
     return element;
   }
 
+  function getVisibilityRect(element) {
+    let rect = element.getBoundingClientRect();
+    do {
+      element = element.parentElement;
+      const element_rect = element.getBoundingClientRect();
+      const element_style = window.getComputedStyle(element);
+      if (element_style.overflowX === "visible" && element_style.overflowY === "visible") continue;
+
+      const left = Math.max(rect.left, element_rect.left);
+      const top = Math.max(rect.top, element_rect.top);
+      const right = element_style.overflowX === "hidden" ? Math.min(rect.right, element_rect.right) : rect.right;
+      const bottom = element_style.overflowY === "hidden" ? Math.min(rect.bottom, element_rect.bottom) : rect.bottom;
+      rect = new DOMRect(left, top, right-left, bottom-top);
+    } while(element !== document.body)
+    return rect;
+  }
+
   function checkVisible(element) {
     if(!element.checkVisibility()) return false;  // display: none
-    const container = findNearestOverflowContainer(element);
-    if (container !== document.body && !checkVisible(container)) return false;
-    const containerStyle = window.getComputedStyle(container);
-    const element_rect = element.getBoundingClientRect();
-    const container_rect = container.getBoundingClientRect();
-    const body_rect = document.body.getBoundingClientRect();
-    return element_rect.right >= body_rect.left && element_rect.bottom >= body_rect.top &&              // cut off by body's      left or top edge
-           element_rect.right >= container_rect.left && element_rect.bottom >= container_rect.top &&    // cut off by container's left or top edge
-          (containerStyle.overflowX !== "hidden" || element_rect.left <= container_rect.right) &&      // cut off by container's right edge when overflow-x: hidden
-          (containerStyle.overflowY !== "hidden" || element_rect.top <= container_rect.bottom);        // cut off by container's bottom edge when overflow-y: hidden
+    const visibility_rect = getVisibilityRect(element);
+    return visibility_rect.width > 0 && visibility_rect.height > 0  // no part of element is visible
   }
 
   function debugLog() {
@@ -118,6 +127,22 @@
     return GM_getValue(key, DEFAULT_SETTINGS[key]);
   }
 
+  function openURL(url, settings) {
+    if (settings?.replace) {
+      window.location = url;
+      return;
+    }
+    let parsedURL = new URL(url);
+    switch (parsedURL.protocol) {
+      case "http:":
+      case "https:":
+        GM_openInTab(url, settings);
+        return;
+      default: // blob and data links
+        window.open(url, "_blank");
+        return;
+    }
+  }
 
   // == MAIN CODE == //
   document.addEventListener("click", ev => {
@@ -144,7 +169,11 @@
 
     // For lepictorium.fr: If we clicked under .preview-thumbnail-hover, go up to .thumb-container, then down to .preview-thumbnail
     if (document.location.host.endsWith("lepictorium.fr") && main_target.closest(".preview-thumbnail-hover"))
-      main_target = main_target.closest(".thumb-container")?.querySelector(".preview-thumbnail") ?? main_target
+      main_target = main_target.closest(".thumb-container")?.querySelector(".preview-thumbnail") ?? main_target;
+
+    // For bndestem.nl: If we've clicked inside .slideshow__controls, go up to .slideshow__controls's parent element and then back down to .slideshow__container
+    if (document.location.host.endsWith("bndestem.nl"))
+      main_target = main_target.closest(".slideshow__controls")?.parentElement?.querySelector(".slideshow__container") ?? main_target;
 
     // == END OF SITE-SPECIFIC FIXES == //
 
@@ -191,14 +220,14 @@
       const images = Array.from(target.querySelectorAll("image"));
       const pictures = Array.from(target.querySelectorAll("picture"));
       // Check if target is an image
-      switch(target.nodeName) {
-        case "IMG":
+      switch(target.nodeName.toLowerCase()) {
+        case "img":
           imgs.push(target);
           break;
-        case "IMAGE":
+        case "image":
           images.push(target);
           break;
-        case "PICTURE":
+        case "picture":
           pictures.push(target);
           break;
       }
@@ -261,8 +290,8 @@
     if (getSetting(ev.ctrlKey ? "search-tab-behaviour" : "image-tab-behaviour") == "00") {
       first_url = urls.shift();
     }
-    for (const u of urls) if (u != null) GM_openInTab(ev.ctrlKey ? googleSearch(u) : u, { active: getSetting(ev.ctrlKey ? "search-tab-behaviour" : "image-tab-behaviour") == "11", insert: true });
-    if (first_url != undefined) window.location = ev.ctrlKey ? googleSearch(first_url) : first_url;
+    for (const u of urls) if (u != null) openURL(ev.ctrlKey ? googleSearch(u) : u, { active: getSetting(ev.ctrlKey ? "search-tab-behaviour" : "image-tab-behaviour") == "11", insert: true });
+    if (first_url != undefined) openURL(ev.ctrlKey ? googleSearch(first_url) : first_url, { replace: true });
   }, {capture: true});
   // Block other click events on alt-click
   function blockOnAlt(event) {
