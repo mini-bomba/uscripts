@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.11
+// @version     1.6.12
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -56,9 +56,12 @@
 
       const left = Math.max(rect.left, element_rect.left);
       const top = Math.max(rect.top, element_rect.top);
-      const right = element_style.overflowX === "hidden" ? Math.min(rect.right, element_rect.right) : rect.right;
-      const bottom = element_style.overflowY === "hidden" ? Math.min(rect.bottom, element_rect.bottom) : rect.bottom;
-      rect = new DOMRect(left, top, right-left, bottom-top);
+      const right = Math.max(element_style.overflowX === "hidden" ? Math.min(rect.right, element_rect.right) : rect.right, left);
+      const bottom = Math.max(element_style.overflowY === "hidden" ? Math.min(rect.bottom, element_rect.bottom) : rect.bottom, top);
+      const width = right - left;
+      const height = bottom - top;
+
+      rect = new DOMRect(left, top, width, height);
     } while(element !== document.body)
     return rect;
   }
@@ -183,8 +186,8 @@
       debugLog("Same-size element, going up");
       main_target = main_target.parentElement;
     }
-    const targets = [main_target]
-    // If the element has an aria-controls attribute, search these too
+    const targets = []
+    // If the element has an aria-controls attribute, search these instead
     const aria_controls = main_target.getAttribute("aria-controls");
     if (aria_controls != null) {
       debugLog("aria-controls found on main target, adding these to target list");
@@ -195,6 +198,9 @@
           debugLog("Added", element);
         }
       }
+    // if it has no aria-controls attribute, search it
+    } else {
+      targets.push(main_target);
     }
     debugLog("Final list of targets", targets);
     // Collect URLs
