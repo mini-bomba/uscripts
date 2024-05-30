@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Audycja zawiera(ła) lokowanie produktu (requires SponsorBlock)
+// @name        Audycja zawiera(ła) lokowanie produktu
 // @namespace   uscripts.minibomba.pro
 // @match       https://www.youtube.com/*
 // @match       https://uscripts.minibomba.pro/audycja_zawiera_lokowanie_produktu
@@ -7,13 +7,13 @@
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
 // @grant       GM_openInTab
-// @version     1.0.0
+// @version     1.0.1
 // @homepageURL https://github.com/mini-bomba/uscripts
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js
 // @author      mini_bomba
 // ==/UserScript==
-(function (){
+(async function (){
   // Configs
   const DEFAULT_SETTINGS = {
     "trigger-sponsor": true,
@@ -53,6 +53,9 @@
     document.getElementById("not-installed").classList.add("hidden");
     settings.classList.remove("hidden");
   }
+  function sleep(ms) {
+    return new Promise((res, _) => setTimeout(res, ms));
+  }
 
   GM_registerMenuCommand("Open settings", () => GM_openInTab("https://uscripts.minibomba.pro/audycja_zawiera_lokowanie_produktu"));
   if (window.location == "https://uscripts.minibomba.pro/audycja_zawiera_lokowanie_produktu") {
@@ -87,7 +90,12 @@
     easing: ["ease-in", "linear", "ease-out"],
   }
 
-  const player_div = document.getElementById("movie_player");
+  let player_div = null;
+  for (i=0;i<20;i++) {
+    player_div = document.getElementById("movie_player");
+    if (player_div != null) break;
+    await sleep(250);
+  }
   const player = player_div.querySelector("video");
 
   const image_div = document.createElement("div");
@@ -114,7 +122,7 @@
     image.src = getSetting("start-image-url");
     animation.play();
   });
-    player.addEventListener("pause", () => {
+  player.addEventListener("pause", () => {
     const category_pill = document.querySelector(".sponsorBlockCategoryPill");
     if (!category_pill) return;
 
