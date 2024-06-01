@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.12
+// @version     1.6.13
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -68,7 +68,9 @@
 
   function checkVisible(element) {
     if(!element.checkVisibility()) return false;  // display: none
-    element = element.closest(":not(picture)");  // if element is <picture>, check a non-<picture> parent instead, as <picture>s often have 0 height
+    if (isTag(element, "picture")) {
+      element = element.querySelector(":scope > img") ?? element.closest(":not(picture)");  // if element is <picture>, check the <img> or a non-<picture> parent instead, as <picture>s often have 0 height
+    }
     const visibility_rect = getVisibilityRect(element);
     return visibility_rect.width > 0 && visibility_rect.height > 0  // no part of element is visible
   }
