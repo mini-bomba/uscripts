@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.13
+// @version     1.6.14
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -293,7 +293,7 @@
     }
     last_size = null;
     // Open all images
-    urls = Array.from(urls);
+    urls = Array.from(urls).map(u => new URL(u, document.location.origin).href);
     debugLog("Final list of URLs", urls);
     let first_url = undefined;
     if (getSetting(ev.ctrlKey ? "search-tab-behaviour" : "image-tab-behaviour") == "00") {
