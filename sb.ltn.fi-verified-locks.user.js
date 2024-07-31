@@ -2,8 +2,9 @@
 // @name        SBB verified locks
 // @namespace   uscripts.minibomba.pro
 // @match       https://sb.ltn.fi/*
-// @grant       none
-// @version     1.0.2
+// @grant       GM_getResourceURL
+// @resource    verifiedIcon https://cdn.discordapp.com/emojis/1041978575659741214.webp?size=96&quality=lossless
+// @version     1.0.3
 // @author      mini_bomba
 // @description Replaces the 🔒 icon in the votes column with a verified icon
 // @homepageURL https://github.com/mini-bomba/uscripts
@@ -14,7 +15,7 @@
   // Verified icon
   const verifiedIcon = document.createElement("img");
   verifiedIcon.classList.add("mb-verifiedicon");
-  verifiedIcon.src = "https://cdn.discordapp.com/emojis/1041978575659741214.webp?size=96&quality=lossless";
+  verifiedIcon.src = GM_getResourceURL("verifiedIcon", true);
   // Fake 🔒 to stop the refresh script from recreating the lock icon
   const fakeIcon = document.createElement("span");
   fakeIcon.classList.add("mb-fakeicon");
