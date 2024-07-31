@@ -7,7 +7,9 @@
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
 // @grant       GM_openInTab
-// @version     1.0.1
+// @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/general.js
+// @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/settings.js
+// @version     1.0.2
 // @homepageURL https://github.com/mini-bomba/uscripts
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js
@@ -15,53 +17,20 @@
 // ==/UserScript==
 (async function (){
   // Configs
-  const DEFAULT_SETTINGS = {
-    "trigger-sponsor": true,
-    "trigger-exclusive-access": true,
-    "trigger-selfpromo": false,
-    "start-image-url": "https://uscripts.minibomba.pro/sponsor_begin.png",
-    "end-image-url": "https://uscripts.minibomba.pro/sponsor_end.png",
-  }
-  function getSetting(key) {
-    return GM_getValue(key, DEFAULT_SETTINGS[key]);
-  }
-  function handleSettingChange(event) {
-    if (event.target.nodeName === "INPUT" && event.target.checkValidity()) switch (event.target.type) {
-      case "checkbox":
-        GM_setValue(event.target.id, event.target.checked);
-        break;
-      case "number":
-        let val = Number(event.target.value)
-        if (!isNaN(val)) GM_setValue(event.target.id, val);
-        break;
-      default:
-        GM_setValue(event.target.id, event.target.value);
-    }
-  }
+  const { SETTINGS, on_the_config_page } = settingsSetup({
+    default_settings: {
+      trigger_sponsor: true,
+      trigger_exclusive_access: true,
+      trigger_selfpromo: false,
+      start_image_url: "https://uscripts.minibomba.pro/sponsor_begin.png",
+      end_image_url: "https://uscripts.minibomba.pro/sponsor_end.png",
+    },
+    settings_page_name: "audycja_zawiera_lokowanie_produktu",
+    settings_event_name: "mbusc-azlp",
+    stop_execution_on_config_page: true,
+  });
 
-  function handleSettingsPage() {
-    const settings = document.getElementById("settings");
-    for (const setting of settings.querySelectorAll("input")) {
-      if (setting.type === "checkbox") {
-        setting.checked = getSetting(setting.id);
-      } else {
-        setting.value = getSetting(setting.id);
-      }
-    }
-    settings.addEventListener("change", handleSettingChange);
-
-    document.getElementById("not-installed").classList.add("hidden");
-    settings.classList.remove("hidden");
-  }
-  function sleep(ms) {
-    return new Promise((res, _) => setTimeout(res, ms));
-  }
-
-  GM_registerMenuCommand("Open settings", () => GM_openInTab("https://uscripts.minibomba.pro/audycja_zawiera_lokowanie_produktu"));
-  if (window.location == "https://uscripts.minibomba.pro/audycja_zawiera_lokowanie_produktu") {
-    window.addEventListener("mbusc-azlp", e => e.preventDefault()); // Config page uses this to verify the script is installed
-    return handleSettingsPage();
-  }
+  if (on_the_config_page) return;
 
   const style = document.createElement("style");
   style.innerHTML = `
@@ -113,13 +82,13 @@
     if (!category_pill) return;
 
     if (!(
-      (category_pill.style.backgroundColor.includes("sponsor") && getSetting("trigger-sponsor"))
-      || (category_pill.style.backgroundColor.includes("exclusive_access") && getSetting("trigger-exclusive-access"))
-      || (category_pill.style.backgroundColor.includes("selfpromo") && getSetting("trigger-selfpromo"))
+      (category_pill.style.backgroundColor.includes("sponsor") && SETTINGS.trigger_sponsor)
+      || (category_pill.style.backgroundColor.includes("exclusive_access") && SETTINGS.trigger_exclusive_access)
+      || (category_pill.style.backgroundColor.includes("selfpromo") && SETTINGS.trigger_selfpromo)
     )) return;
 
     animation.finish();
-    image.src = getSetting("start-image-url");
+    image.src = SETTINGS.start_image_url;
     animation.play();
   });
   player.addEventListener("pause", () => {
@@ -127,13 +96,13 @@
     if (!category_pill) return;
 
     if (!(
-      (category_pill.style.backgroundColor.includes("sponsor") && getSetting("trigger-sponsor"))
-      || (category_pill.style.backgroundColor.includes("exclusive_access") && getSetting("trigger-exclusive-access"))
-      || (category_pill.style.backgroundColor.includes("selfpromo") && getSetting("trigger-selfpromo"))
+      (category_pill.style.backgroundColor.includes("sponsor") && SETTINGS.trigger_sponsor)
+      || (category_pill.style.backgroundColor.includes("exclusive_access") && SETTINGS.trigger_exclusive_access)
+      || (category_pill.style.backgroundColor.includes("selfpromo") && SETTINGS.trigger_selfpromo)
     )) return;
 
     animation.finish();
-    image.src = getSetting("end-image-url");
+    image.src = SETTINGS.end_image_url;
     animation.play();
   });
 })();
