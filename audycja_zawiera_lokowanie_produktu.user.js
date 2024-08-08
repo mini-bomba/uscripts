@@ -9,7 +9,7 @@
 // @grant       GM_openInTab
 // @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/general.js
 // @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/settings.js
-// @version     1.0.2
+// @version     1.0.3
 // @homepageURL https://github.com/mini-bomba/uscripts
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js
@@ -79,7 +79,7 @@
 
   player.addEventListener("play", () => {
     const category_pill = document.querySelector(".sponsorBlockCategoryPill");
-    if (!category_pill) return;
+    if (!category_pill || !category_pill.checkVisibility()) return;
 
     if (!(
       (category_pill.style.backgroundColor.includes("sponsor") && SETTINGS.trigger_sponsor)
@@ -93,7 +93,7 @@
   });
   player.addEventListener("pause", () => {
     const category_pill = document.querySelector(".sponsorBlockCategoryPill");
-    if (!category_pill) return;
+    if (!category_pill || !category_pill.checkVisibility()) return;
 
     if (!(
       (category_pill.style.backgroundColor.includes("sponsor") && SETTINGS.trigger_sponsor)
