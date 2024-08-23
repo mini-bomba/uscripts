@@ -6,6 +6,7 @@
 //   GM_setValue              - always
 //   GM_deleteValue           - `delete` keyword is used on a settings object prop
 //   GM_registerMenuCommand   - always
+//   GM_openInTab             - always
 
 function settingsSetup({
   default_settings,
@@ -44,7 +45,7 @@ function settingsSetup({
 
 
   function handleSettingChange(event) {
-    if ((isTag(event.target, "input") || isTag(event.target, "select")) && event.target.checkValidity()) switch (event.target.type) {
+    if ((isTag(event.target, "input") || isTag(event.target, "select")) && event.target.reportValidity()) switch (event.target.type) {
       case "checkbox":
         SETTINGS[event.target.id] = event.target.checked;
         break;

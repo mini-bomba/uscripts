@@ -5,6 +5,7 @@
 - [Verified locks](/sb.ltn.fi-verified-locks.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/sb.ltn.fi-verified-locks.user.js))
 
 ### YouTube
+- [YouTube custom grid layouts](/yt_custom_grid.user.js) - ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/yt_custom_grid.user.js), [configure](https://uscripts.minibomba.pro/yt_custom_grid))
 - [Audycja zawiera lokowanie produktu](/audycja_zawiera_lokowanie_produktu.user.js) - requires SponsorBlock ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/audycja_zawiera_lokowanie_produktu.user.js), [configure](https://uscripts.minibomba.pro/audycja_zawiera_lokowanie_produktu))
 
 ### Global userscripts

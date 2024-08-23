@@ -7,10 +7,11 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
+// @grant       GM_openInTab
 // @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/general.js
 // @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/settings.js
 // @run-at      document-start
-// @version     1.0.1
+// @version     1.0.2
 // @author      mini_bomba
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/twitter_redirect.user.js
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/twitter_redirect.user.js
