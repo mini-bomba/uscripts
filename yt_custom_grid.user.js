@@ -10,7 +10,7 @@
 // @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/general.js
 // @require     https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/settings.js
 // @run-at      document-start
-// @version     1.0.0
+// @version     1.0.1
 // @author      mini_bomba
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/yt_custom_grid.user.js
 // @downloadURL https://raw.githubusercontent.com/mini-bomba/uscripts/master/yt_custom_grid.user.js
@@ -47,6 +47,9 @@ function add_css() {
   rule = stylesheet.cssRules[stylesheet.insertRule("ytd-rich-grid-renderer > #contents.ytd-rich-grid-renderer > ytd-rich-item-renderer[rendered-from-rich-grid] {}")];
   rule.style.setProperty("width", "unset", "important");
   rule.style.setProperty("margin", "unset", "important");
+
+  rule = stylesheet.cssRules[stylesheet.insertRule("ytd-rich-grid-renderer > #contents.ytd-rich-grid-renderer > ytd-rich-item-renderer[rendered-from-rich-grid] > #content > ytd-rich-grid-media {}")];
+  rule.style.setProperty("max-width", "unset", "important");
 
   rule = stylesheet.cssRules[stylesheet.insertRule("ytd-rich-grid-renderer > #contents.ytd-rich-grid-renderer > :is(ytd-rich-section-renderer, ytd-continuation-item-renderer) {}")];
   rule.style.setProperty("grid-column", "1 / -1");
