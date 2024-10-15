@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.15
+// @version     1.6.16
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -159,6 +159,10 @@ document.addEventListener("click", ev => {
   // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
   if (main_target.classList.contains("photo-notes-scrappy-view"))
     main_target = main_target.parentElement.querySelector(":scope > .photo-well-media-scrappy-view") ?? main_target;
+
+  // For flickr: if .spaceball was clicked, use the parent element instead
+  if (document.location.host.endsWith("flickr.com") && main_target.classList.contains("spaceball"))
+    main_target = main_target.parentElement ?? main_target;
 
   // For lepictorium.fr: If we clicked under .preview-thumbnail-hover, go up to .thumb-container, then down to .preview-thumbnail
   if (document.location.host.endsWith("lepictorium.fr") && main_target.closest(".preview-thumbnail-hover"))
