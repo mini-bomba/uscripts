@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.16
+// @version     1.6.17
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -69,6 +69,7 @@ function getVisibilityRect(element) {
 
 function checkVisible(element) {
   if(!element.checkVisibility()) return false;  // display: none
+  if(document.location.host.endsWith("flickr.com") && element.classList.contains("spaceball")) return false; // site specific fix for flickr
   if (isTag(element, "picture")) {
     element = element.querySelector(":scope > img") ?? element.closest(":not(picture)");  // if element is <picture>, check the <img> or a non-<picture> parent instead, as <picture>s often have 0 height
   }
