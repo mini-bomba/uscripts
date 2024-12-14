@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.17
+// @version     1.6.18
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -121,19 +121,41 @@ function googleSearch(u) {
   return url.toString();
 }
 
-function openURL(url, settings) {
-  if (settings?.replace) {
-    window.location = url;
-    return;
+// basically a workaround for reddit's stupid preview redirects
+async function tryBlobify(url) {
+  debugLog(`Attempting to blobbify URL '${url}'`)
+  try {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const new_url = new URL(URL.createObjectURL(blob));
+    debugLog(`Blobbified '${url}' => '${new_url}'`);
+    return new_url;
+  } catch (e) {
+    debugLog(`Failed to blobbify URL '${url}'`, e)
+    return url;
+  }
+}
+
+async function openURL(url, settings) {
+  if (settings?.search) {
+    url = googleSearch(url)
   }
   let parsedURL = new URL(url);
+
+  if (parsedURL.host.endsWith(".redd.it")) {
+    parsedURL = await tryBlobify(parsedURL)
+  }
+  if (settings?.replace) {
+    window.location = parsedURL;
+    return;
+  }
   switch (parsedURL.protocol) {
     case "http:":
     case "https:":
-      GM_openInTab(url, settings);
+      GM_openInTab(parsedURL.toString(), settings);
       return;
     default: // blob and data links
-      window.open(url, "_blank");
+      window.open(parsedURL, "_blank");
       return;
   }
 }
@@ -291,8 +313,8 @@ document.addEventListener("click", ev => {
   if ((ev.ctrlKey ? SETTINGS.search_tab_behaviour : SETTINGS.image_tab_behaviour) == "00") {
     first_url = urls.shift();
   }
-  for (const u of urls) if (u != null) openURL(ev.ctrlKey ? googleSearch(u) : u, { active: (ev.ctrlKey ? SETTINGS.search_tab_behaviour : SETTINGS.image_tab_behaviour) == "11", insert: true });
-  if (first_url != undefined) openURL(ev.ctrlKey ? googleSearch(first_url) : first_url, { replace: true });
+  for (const u of urls) if (u != null) openURL(u, { active: (ev.ctrlKey ? SETTINGS.search_tab_behaviour : SETTINGS.image_tab_behaviour) == "11", insert: true, search: ev.ctrlKey });
+  if (first_url != undefined) openURL(first_url, { replace: true, search: ev.ctrlKey });
 }, {capture: true});
 // Block other click events on alt-click
 function blockOnAlt(event) {
