@@ -15,6 +15,7 @@
 - [Twitter Redirect](/twitter_redirect.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/twitter_redirect.user.js), [configure](https://uscripts.minibomba.pro/twitter_redirect))
 - [sejm.gov.pl live stream shortcuts](/sejm.gov.pl-shortcuts.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/sejm.gov.pl-shortcuts.user.js), [configure](https://uscripts.minibomba.pro/sejm-shortcuts))
 - [TestPortal.pl Defuser](/testportal.pl-defuser.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/testportal.pl-defuser.user.js))
+- [Default to Build and Teams on prydwen.gg](/prydwen_build_and_teams.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/prydwen_build_and_teams.user.js))
 
 ## License
 All userscripts are released under the MIT license unless otherwise stated
