@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.18
+// @version     1.6.19
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -142,7 +142,7 @@ async function openURL(url, settings) {
   }
   let parsedURL = new URL(url);
 
-  if (parsedURL.host.endsWith(".redd.it")) {
+  if (parsedURL.host.endsWith(".redd.it") || parsedURL.protocol === "data:") {
     parsedURL = await tryBlobify(parsedURL)
   }
   if (settings?.replace) {
