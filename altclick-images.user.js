@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.19
+// @version     1.6.20
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -194,6 +194,10 @@ document.addEventListener("click", ev => {
   // For bndestem.nl: If we've clicked inside .slideshow__controls, go up to .slideshow__controls's parent element and then back down to .slideshow__container
   if (document.location.host.endsWith("bndestem.nl"))
     main_target = main_target.closest(".slideshow__controls")?.parentElement?.querySelector(".slideshow__container") ?? main_target;
+
+  // For dewatermark.ai: open the output image when clicking on a slider
+  if (document.location.host.endsWith("dewatermark.ai") && isTag(main_target, "img-comparison-slider"))
+    main_target = main_target.querySelector("img[slot=second]") ?? main_target;
 
   // == END OF SITE-SPECIFIC FIXES == //
 
