@@ -11,7 +11,7 @@
 // @require       https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/general.js
 // @require       https://raw.githubusercontent.com/mini-bomba/uscripts/master/utils/settings.js
 // @run-at        document-start
-// @version       1.1.0
+// @version       1.1.1
 // @author        mini_bomba
 // @updateURL     https://raw.githubusercontent.com/mini-bomba/uscripts/master/yt_custom_grid.user.js
 // @downloadURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/yt_custom_grid.user.js
@@ -26,6 +26,12 @@ const { SETTINGS, on_the_config_page } = settingsSetup({
     row_gap: "40px",
     container_padding: "16px",
     mmb_fix: true,
+  },
+  validity_checks: {
+    min_item_width: val => CSS.supports("grid-template-columns", `repeat(auto-fit, minmax(${val}, 1fr))`) || "Invalid CSS value!",
+    column_gap: val => CSS.supports("column-gap", val) || "Invalid CSS value!",
+    row_gap: val => CSS.supports("row-gap", val) || "Invalid CSS value!",
+    container_padding: val => (CSS.supports("padding-left", val) && CSS.supports("padding-right", val)) || "Invalid CSS value!",
   },
   settings_page_name: "yt_custom_grid",
   settings_event_name: "mbusc-ytcg",
@@ -79,31 +85,9 @@ function on_middleclick(ev) {
   ev.stopImmediatePropagation();
 }
 
-function custom_setting_check(id, check) {
-  document.getElementById(id).addEventListener("change", e => {
-    if (isTag(event.target, "input")) {
-      if (check(event.target.value)) {
-        event.target.setCustomValidity("");
-      } else {
-        event.target.setCustomValidity("Invalid CSS value!");
-      }
-    }
-  }, {
-    capture: true,
-    passive: true,
-  });
-}
-
 if (!on_the_config_page) {
   GM_registerMenuCommand("Refresh CSS", add_css);
   add_css();
   document.addEventListener("mousedown", on_middleclick, {capture: true});
-} else {
-  waitUntilInteractive().then(() => {
-    custom_setting_check("min-item-width", val => CSS.supports("grid-template-columns", `repeat(auto-fit, minmax(${val}, 1fr))`));
-    custom_setting_check("column-gap", val => CSS.supports("column-gap", val));
-    custom_setting_check("row-gap", val => CSS.supports("row-gap", val));
-    custom_setting_check("container-padding", val => CSS.supports("padding-left", val) && CSS.supports("padding-right", val));
-  });
 }
 
