@@ -3,6 +3,7 @@
 ## List of available userscripts
 ### SB Browser (sb.ltn.fi)
 - [Verified locks](/sb.ltn.fi-verified-locks.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/sb.ltn.fi-verified-locks.user.js))
+- [SBB number reformat](/sb.ltn.fi-number-reformat.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/sb.ltn.fi-number-reformat.user.js), [configure](https://uscripts.minibomba.pro/sbb_numreformat))
 
 ### YouTube
 - [YouTube custom grid layouts](/yt_custom_grid.user.js) - ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/yt_custom_grid.user.js), [configure](https://uscripts.minibomba.pro/yt_custom_grid))
