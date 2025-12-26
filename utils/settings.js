@@ -62,8 +62,9 @@ function settingsSetup({
         value = event.target.value;
     }
     // run custom validity checks
-    if (event.target.id in validity_checks) {
-      const result = validity_checks[event.target.id](value);
+    const setting_name = event.target.id.replaceAll("-", "_");
+    if (setting_name in validity_checks) {
+      const result = validity_checks[setting_name](value);
       if (result === false) {
         event.target.setCustomValidity("Custom check failed");
       } else if (typeof result === "string") {
