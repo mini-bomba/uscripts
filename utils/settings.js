@@ -10,9 +10,11 @@
 
 function settingsSetup({
   default_settings,
+  validity_checks,
   settings_event_name,
   settings_page_name,
 }) {
+  validity_checks ??= {};
   const SETTINGS = new Proxy({}, {
     get: function (_, key, _) {
       key = key.replaceAll('-', '_');
@@ -45,17 +47,32 @@ function settingsSetup({
 
 
   function handleSettingChange(event) {
-    if ((isTag(event.target, "input") || isTag(event.target, "select")) && event.target.reportValidity()) switch (event.target.type) {
+    // check target type
+    if (!isTag(event.target, "input") && !isTag(event.target, "select")) return;
+    // extract value;
+    let value;
+    switch (event.target.type) {
       case "checkbox":
-        SETTINGS[event.target.id] = event.target.checked;
+        value = event.target.checked;
         break;
       case "number":
-        let val = Number(event.target.value)
-        if (!isNaN(val)) SETTINGS[event.target.id] = val;
+        value = Number(event.target.value)
         break;
       default:
-        SETTINGS[event.target.id] = event.target.value;
+        value = event.target.value;
     }
+    // run custom validity checks
+    if (event.target.id in validity_checks) {
+      const result = validity_checks[event.target.id](value);
+      if (result === false) {
+        event.target.setCustomValidity("Custom check failed");
+      } else if (typeof result === "string") {
+        event.target.setCustomValidity(result);
+      } else {
+        event.target.setCustomValidity("");
+      }
+    }
+    if (event.target.reportValidity()) SETTINGS[event.target.id] = value;
   }
 
   async function handleConfigPage() {
