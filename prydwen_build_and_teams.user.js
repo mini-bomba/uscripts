@@ -3,7 +3,7 @@
 // @namespace   uscripts.minibomba.pro
 // @match       *://www.prydwen.gg/*
 // @grant       none
-// @version     1.0.1
+// @version     1.0.2
 // @author      mini_bomba
 // @run-at      document-start
 // @updateURL   https://raw.githubusercontent.com/mini-bomba/uscripts/master/prydwen_build_and_teams.user.js
@@ -11,7 +11,7 @@
 // @description Switches to the Build and Teams tab for characters automatically
 // ==/UserScript==
 
-const PLUGINS_MODULE_REGEX = /e\.exports\s*=\s*\[\s*{\s*plugin:/m
+const PLUGINS_MODULE_REGEX = /{\w+\.exports\s*=\s*\[\s*{\s*plugin:/m
 
 let webpack_chunks = undefined;
 Object.defineProperty(window, 'webpackChunkprydwen', {
@@ -50,6 +50,7 @@ function injectPlugins(original_function) {
 }
 
 function onLocationChanged({location}) {
+  console.log("loc change");
   if (!location.pathname.startsWith('/star-rail/characters/')) return;
   const build_tab = Array.from(document.querySelectorAll('.single-tab')).find(tab => tab.children[1]?.tagName === "P" && tab.children[1].textContent.toLowerCase() === "build and teams");
   build_tab?.click();
