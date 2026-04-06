@@ -11,10 +11,10 @@ function sleep(ms) {
   return new Promise((res, _) => setTimeout(res, ms));
 }
 
-function waitUntilInteractive() {
-  if (document.readyState == "loading") {
+function waitUntilInteractive(doc = document) {
+  if (doc.readyState == "loading") {
     return new Promise((res, _) => {
-      document.addEventListener("readystatechange", _ => res(), {once: true});
+      doc.addEventListener("readystatechange", _ => res(), {once: true});
     });
   } else {
     return Promise.resolve();

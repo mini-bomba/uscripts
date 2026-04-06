@@ -11,6 +11,7 @@
 
 ### Global userscripts
 - [Alt-click to open all images](/altclick-images.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/altclick-images.user.js), [configure](https://uscripts.minibomba.pro/altclick-images))
+- [Selective cookie persistence](/selective_cookie_persistence.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/selective_cookie_persistence.user.js))
 
 ### Misc sites
 - [Twitter Redirect](/twitter_redirect.user.js) ([install](https://raw.githubusercontent.com/mini-bomba/uscripts/master/twitter_redirect.user.js), [configure](https://uscripts.minibomba.pro/twitter_redirect))
