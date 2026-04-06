@@ -7,11 +7,11 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_deleteValue
-// @grant       GM_getResourceURL
+// @grant       GM_getResourceText
 // @run-at      document-start
 // @resource    configSource ./utils/selective_cookie_persistence_config.html
 // @require     ./utils/general.js
-// @version     1.0
+// @version     1.0.1
 // @top-level-await
 // @author      mini_bomba
 // @updateURL     https://raw.githubusercontent.com/mini-bomba/uscripts/master/selective_cookie_persistence.user.js
@@ -19,6 +19,7 @@
 // ==/UserScript==
 
 
+let configPageBlink = null;
 const FLAG_ENTRY_KEY = "selectiveCookiePersistenceCheck";
 const host = document.location.host;
 
@@ -131,7 +132,12 @@ GM_registerMenuCommand("Edit persisted entries", () => {
     ev.preventDefault();
     ev.stopPropagation();
     ev.stopImmediatePropagation();
-    const newWindow = window.open(GM_getResourceURL("configSource"));
+    if (configPageBlink == null) {
+      configPageBlink = URL.createObjectURL(
+        new Blob(GM_getResourceText("configSource"), { type: "text/html" }),
+      );
+    }
+    const newWindow = window.open(configPageBlink);
     await waitUntilInteractive(newWindow.document);
     await sleep(100);
     let cookieCallbacks, storageCallbacks;
