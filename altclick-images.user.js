@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.20
+// @version     1.6.21
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -198,6 +198,10 @@ document.addEventListener("click", ev => {
   // For dewatermark.ai: open the output image when clicking on a slider
   if (document.location.host.endsWith("dewatermark.ai") && isTag(main_target, "img-comparison-slider"))
     main_target = main_target.querySelector("img[slot=second]") ?? main_target;
+
+  // For allegro.pl: target the current product gallery image directly
+  if (document.location.host.endsWith("allegro.pl"))
+    main_target = main_target.closest('div[data-box-name="showoffer.gallery"]')?.querySelector("div[style^=transform] > img[role=presentation]") ?? main_target;
 
   // == END OF SITE-SPECIFIC FIXES == //
 
