@@ -2,7 +2,7 @@
 // @name        Alt-click to open all images
 // @namespace   uscripts.minibomba.pro
 // @description Opens all images under in the clicked element on alt-click
-// @version     1.6.21
+// @version     1.6.22
 // @match       *://*/*
 // @grant       GM_openInTab
 // @grant       GM_notification
@@ -178,6 +178,7 @@ document.addEventListener("click", ev => {
   }
 
   // == SITE-SPECIFIC FIXES == //
+  let ignore_same_size = false;
 
   // For flickr: if .photo-notes-scrappy-view was clicked, go up and find .photo-well-media-scrappy-view
   if (main_target.classList.contains("photo-notes-scrappy-view"))
@@ -203,10 +204,17 @@ document.addEventListener("click", ev => {
   if (document.location.host.endsWith("allegro.pl"))
     main_target = main_target.closest('div[data-box-name="showoffer.gallery"]')?.querySelector("div[style^=transform] > img[role=presentation]") ?? main_target;
 
+  // for pluska.sk: go up to .splide (slider root), then down to .splide__slide.is-active (current slide), then down to the figure (high res image)
+  if (document.location.host.endsWith("pluska.sk")) {
+    const slide = main_target.closest(".splide")?.querySelector(".splide__slide.is-active");
+    main_target = slide?.querySelector("figure") ?? slide ?? main_target;
+    ignore_same_size = true;
+  }
+
   // == END OF SITE-SPECIFIC FIXES == //
 
   // If parent element has the same size as current element, but is not an image itself, go up
-  while (main_target.parentElement != null && !isTag(main_target, "img") && !isTag(main_target, "picture") && !isTag(main_target, "image") && compareBoundingRects(main_target, main_target.parentElement)) {
+  while (!ignore_same_size && main_target.parentElement != null && !isTag(main_target, "img") && !isTag(main_target, "picture") && !isTag(main_target, "image") && compareBoundingRects(main_target, main_target.parentElement)) {
     debugLog("Same-size element, going up");
     main_target = main_target.parentElement;
   }
